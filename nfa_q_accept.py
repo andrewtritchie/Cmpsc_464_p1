@@ -1,4 +1,4 @@
-test_string = "1"
+test_string = "0"
 out = False
 with open("nfa.txt", 'r') as nfa:
     #get number of states
@@ -33,23 +33,30 @@ with open("nfa.txt", 'r') as nfa:
 
 
     for a in list_of_accepts:
-        current_state = a
+        current_states = {a}
         dummy_string = test_string
         
+        
         while(len(dummy_string)>0):
-            dummy_len = len(dummy_string)
-            for t in trans:
-                src, sym, dst = [x.strip() for x in t.split(',')]
-                if (current_state == int(dst) and (dummy_string[-1] == sym or sym == "E")):
-                    current_state = int(src)
-                    if sym != "E":
-                        dummy_string = dummy_string[:-1]
-                    break
-            #length did not change nor did state, no transitions worked
-            if dummy_len == len(dummy_string):
+            next_states = set()
+            state_flag = False
+            for state in current_states:
+                for t in trans:
+                    src, sym, dst = [x.strip() for x in t.split(',')]
+                    if state ==int(dst):
+                        if sym == "E":
+                            next_states.add(int(src))
+                        elif dummy_string[-1] == sym:
+                            next_states.add(int(src))
+                            state_flag=True
+            if not next_states:
                 break
+            if state_flag:
+                dummy_string = dummy_string[:-1]
+            current_states = next_states
+            
         #If the dummy string is empty and we are at a start state, we return true
-        if len(dummy_string) == 0 and int(current_state) == start_state:
+        if len(dummy_string) == 0 and start_state in current_states:
             out = True
     print(out)
 
